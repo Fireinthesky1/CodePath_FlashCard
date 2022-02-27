@@ -6,7 +6,6 @@
 -Flash Card App prompts user with question, allows user to choose to see choices or hide choises. Selecting a choice will change the color of the choice to indicate whether the choice is correct. Click the question to reveal the answer.
 
 ### App Walk-though
-`TODO://` Add the URL to your animated app walk-though `gif` in the image tag below. Make sure the gif actually renders and animates when viewing this README. (☝️ Remove this paragraph after after adding gif)
 
 <img src="https://media1.giphy.com/media/Pag8BlHge3cb1tsRwG/giphy.gif?cid=790b7611a64129de7157a794a5ebcb6289619f47a753b9b5&rid=giphy.gif&ct=g" width=200><br>
 
