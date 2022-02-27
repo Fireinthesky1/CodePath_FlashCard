@@ -8,7 +8,7 @@
 ### App Walk-though
 `TODO://` Add the URL to your animated app walk-though `gif` in the image tag below. Make sure the gif actually renders and animates when viewing this README. (☝️ Remove this paragraph after after adding gif)
 
-<img src="YOUR_GIF_URL_HERE" width=200><br>
+<img src="https://media1.giphy.com/media/Pag8BlHge3cb1tsRwG/giphy.gif?cid=790b7611a64129de7157a794a5ebcb6289619f47a753b9b5&rid=giphy.gif&ct=g" width=200><br>
 
 ## Required
 - [X] Create New Project in Android Studio
