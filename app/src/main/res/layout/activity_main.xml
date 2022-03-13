@@ -30,7 +30,7 @@
         android:layout_height="200dp"
         android:gravity="center"
         android:text="J.R.R. Tolkien"
-        android:textSize="40sp"
+        android:textSize="30sp"
         android:background="@drawable/card_background"
         android:visibility="invisible" />
 
@@ -84,7 +84,6 @@
         android:layout_width="50dp"
         android:layout_height="50dp"
         android:layout_alignParentBottom="true"
-
         android:layout_centerHorizontal="true"
         android:layout_marginBottom="10dp"
         android:src="@drawable/open_eye"
@@ -93,13 +92,33 @@
 
 
     <ImageView
+        android:id="@+id/edit"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="10dp"
+        android:src="@drawable/edit" />
+
+
+
+    <ImageView
         android:id="@+id/closed_eye_imageview"
         android:layout_width="50dp"
         android:layout_height="50dp"
         android:layout_alignParentBottom="true"
-
         android:layout_centerHorizontal="true"
         android:layout_marginBottom="10dp"
         android:src="@drawable/closed_eye"
         android:visibility="visible"/>
+
+
+
+    <ImageView
+        android:id="@+id/plus"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:layout_marginBottom="10dp"
+        android:src="@drawable/plus_new"/>
 </RelativeLayout>

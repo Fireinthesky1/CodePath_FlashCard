@@ -2,10 +2,13 @@ package com.example.codepath_flashcard;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import com.google.android.material.snackbar.Snackbar;
 
 public class MainActivity extends AppCompatActivity {
     //instance fields
@@ -105,6 +108,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
 
+
         //onclick listener for show icon
         open_eye.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -120,5 +124,59 @@ public class MainActivity extends AppCompatActivity {
                 isShowingAnswers = true;
             }
         });
+
+
+
+        //go to the add card activity and request data back from it
+        findViewById(R.id.plus).setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MainActivity.this, AddCardActivity.class);
+                MainActivity.this.startActivityForResult(intent, 100);
+            }
+        });
+
+
+
+        //onclick listener for the edit button
+        findViewById(R.id.edit).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent_for_edit = new Intent(MainActivity.this, AddCardActivity.class);
+                String current_question = ((TextView) findViewById(R.id.Flashcard_Question_textview)).getText().toString();
+                String current_answer = ((TextView) findViewById(R.id.Flashcard_answer_textview)).getText().toString();
+                String current_wrong_answer_option_1 = ((TextView) findViewById(R.id.Flashcard_choice_1_textview)).getText().toString();
+                String current_wrong_answer_option_2 = ((TextView) findViewById(R.id.Flashcard_choice_2_textview)).getText().toString();
+                intent_for_edit.putExtra("question_to_edit", current_question);
+                intent_for_edit.putExtra("answer_to_edit", current_answer);
+                intent_for_edit.putExtra("wrong_choice_1", current_wrong_answer_option_1);
+                intent_for_edit.putExtra("wrong_choice_2", current_wrong_answer_option_2);
+                MainActivity.this.startActivityForResult(intent_for_edit, 100);
+            }
+        });
+    }
+
+
+
+    //not sure why this method give an error
+    //not sure why I can't use setText() method
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == 100) {
+            if(data != null) {
+                String question = data.getExtras().getString("question");
+                String answer = data.getExtras().getString("answer");
+                String choice_1 = data.getExtras().getString("choice_1");
+                String choice_2 = data.getExtras().getString("choice_2");
+
+                ((TextView) findViewById(R.id.Flashcard_Question_textview)).setText(question);
+                ((TextView) findViewById(R.id.Flashcard_answer_textview)).setText(answer);
+                ((TextView) findViewById(R.id.Flashcard_choice_1_textview)).setText(choice_1);
+                ((TextView) findViewById(R.id.Flashcard_choice_2_textview)).setText(choice_2);
+                ((TextView) findViewById(R.id.Flashcard_choice_3_textview)).setText(answer);
+                Snackbar.make(findViewById(R.id.Flashcard_Question_textview), "card successfully created", Snackbar.LENGTH_SHORT).show();
+            }
+        }
     }
 }

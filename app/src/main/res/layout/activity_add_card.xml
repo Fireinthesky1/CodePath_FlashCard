@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".AddCardActivity"
+    android:paddingTop="10dp"
+    android:paddingLeft="10dp"
+    android:paddingRight="10dp"
+    android:background="@color/purple_700">
+
+
+
+    <ImageView
+        android:id="@+id/back_arrow"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:layout_marginBottom="10dp"
+        android:src="@drawable/back_arrow"/>
+
+
+
+    <ImageView
+        android:id="@+id/save_button"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="10dp"
+        android:src="@drawable/save"/>
+
+
+
+    <EditText
+        android:id="@+id/question"
+        android:layout_width="match_parent"
+        android:layout_height="70dp"
+        android:layout_margin="20dp"
+        android:hint="Enter question here!"
+        android:inputType="textMultiLine"/>
+
+
+
+    <EditText
+        android:id="@+id/answer"
+        android:layout_below="@+id/question"
+        android:layout_width="match_parent"
+        android:layout_height="70dp"
+        android:layout_margin="20dp"
+        android:hint="Enter answer here!"
+        android:inputType="textMultiLine"/>
+
+
+
+    <EditText
+        android:id="@+id/wrong_answer_option_1"
+        android:layout_below="@+id/answer"
+        android:layout_width="match_parent"
+        android:layout_height="70dp"
+        android:layout_margin="20dp"
+        android:hint="Enter wrong answer option here!"
+        android:inputType="textMultiLine"/>
+
+
+
+    <EditText
+        android:id="@+id/wrong_answer_option_2"
+        android:layout_below="@+id/wrong_answer_option_1"
+        android:layout_width="match_parent"
+        android:layout_height="70dp"
+        android:layout_margin="20dp"
+        android:hint="Enter another wrong answer option here!"
+        android:inputType="textMultiLine"/>
+</RelativeLayout>
