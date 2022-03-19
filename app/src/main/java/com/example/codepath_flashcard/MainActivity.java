@@ -1,8 +1,10 @@
 package com.example.codepath_flashcard;
 
+import androidx.annotation.DrawableRes;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageView;
@@ -10,9 +12,25 @@ import android.widget.TextView;
 
 import com.google.android.material.snackbar.Snackbar;
 
+import java.util.List;
+import java.util.Random;
+
 public class MainActivity extends AppCompatActivity {
     //instance fields
     boolean isShowingAnswers = true;
+    FlashcardDatabase flashcardDatabase;
+    List<Flashcard> allFlashcards;
+    int currentCardDisplayedIndex = 0;
+    Flashcard cardToEdit;
+    int Add_Card_Request_Code = 100;
+    int Edit_Card_Request_Code = 200;
+
+
+    //utility methods
+    public int generate_random_number(int minNumber, int maxNumber) {
+        Random rand = new Random();
+        return rand.nextInt((maxNumber - minNumber) + 1);
+    }
 
 
 
@@ -20,8 +38,6 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-
 
         //storing my textviews as variables
         TextView Flashcard_Question = findViewById(R.id.Flashcard_Question_textview);
@@ -31,6 +47,21 @@ public class MainActivity extends AppCompatActivity {
         TextView Flashcard_choice_3 = findViewById(R.id.Flashcard_choice_3_textview);
         ImageView open_eye = findViewById(R.id.open_eye_imageview);
         ImageView closed_eye = findViewById(R.id.closed_eye_imageview);
+
+        //initializing flashcardDatabase
+        flashcardDatabase = new FlashcardDatabase(getApplicationContext());
+
+        //getting cards from flashcardDatabase
+        allFlashcards = flashcardDatabase.getAllCards();
+
+        //if there are any flashcards in the database display the first one to the screen
+        if(allFlashcards != null && allFlashcards.size() > 0) {
+            ((TextView) findViewById(R.id.Flashcard_Question_textview)).setText(allFlashcards.get(0).getQuestion());
+            ((TextView) findViewById(R.id.Flashcard_answer_textview)).setText(allFlashcards.get(0).getAnswer());
+            ((TextView) findViewById(R.id.Flashcard_choice_1_textview)).setText(allFlashcards.get(0).getWrongAnswer1());
+            ((TextView) findViewById(R.id.Flashcard_choice_2_textview)).setText(allFlashcards.get(0).getWrongAnswer2());
+            ((TextView) findViewById(R.id.Flashcard_choice_3_textview)).setText(allFlashcards.get(0).getAnswer());
+        }
 
 
 
@@ -63,7 +94,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 //switch the color of the text
-                Flashcard_choice_1.setBackgroundColor(getResources().getColor(R.color.Red, null));
+                Flashcard_choice_1.setBackground(getDrawable(R.drawable.card_background_false));
             }
         });
 
@@ -74,7 +105,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 //switch the color of the text
-                Flashcard_choice_2.setBackgroundColor(getResources().getColor(R.color.Red, null));
+                Flashcard_choice_2.setBackground(getDrawable(R.drawable.card_background_false));
             }
         });
 
@@ -85,7 +116,8 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 //switch the color of the text
-                Flashcard_choice_3.setBackgroundColor(getResources().getColor(R.color.Green, null));
+                Flashcard_choice_3.setBackground(getDrawable(R.drawable.card_background_correct));
+                //Flashcard_choice_3.setBackgroundColor(getResources().getColor(R.color.Green, null));
             }
         });
 
@@ -132,7 +164,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(MainActivity.this, AddCardActivity.class);
-                MainActivity.this.startActivityForResult(intent, 100);
+                MainActivity.this.startActivityForResult(intent, Add_Card_Request_Code);
             }
         });
 
@@ -144,6 +176,19 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
                 Intent intent_for_edit = new Intent(MainActivity.this, AddCardActivity.class);
                 String current_question = ((TextView) findViewById(R.id.Flashcard_Question_textview)).getText().toString();
+
+                if(allFlashcards.size() == 0) {
+                    Snackbar.make(findViewById(R.id.Flashcard_Question_textview), "Cannot edit example card!", Snackbar.LENGTH_SHORT).show();
+                    return;
+                }
+
+                //find the current flashcard in allFlashCards and point cardToEdit at that flashcard
+                for(int i = 0; i < allFlashcards.size(); i++){
+                    if(allFlashcards.get(i).getQuestion().equals(current_question)) {
+                        cardToEdit = allFlashcards.get(i);
+                    }
+                }
+
                 String current_answer = ((TextView) findViewById(R.id.Flashcard_answer_textview)).getText().toString();
                 String current_wrong_answer_option_1 = ((TextView) findViewById(R.id.Flashcard_choice_1_textview)).getText().toString();
                 String current_wrong_answer_option_2 = ((TextView) findViewById(R.id.Flashcard_choice_2_textview)).getText().toString();
@@ -151,24 +196,96 @@ public class MainActivity extends AppCompatActivity {
                 intent_for_edit.putExtra("answer_to_edit", current_answer);
                 intent_for_edit.putExtra("wrong_choice_1", current_wrong_answer_option_1);
                 intent_for_edit.putExtra("wrong_choice_2", current_wrong_answer_option_2);
-                MainActivity.this.startActivityForResult(intent_for_edit, 100);
+                MainActivity.this.startActivityForResult(intent_for_edit, Edit_Card_Request_Code);
+            }
+        });
+
+
+
+        //onclick listener for the next button
+        findViewById(R.id.next).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                findViewById(R.id.Flashcard_choice_1_textview).setBackground(getDrawable(R.drawable.card_background_2));
+                findViewById(R.id.Flashcard_choice_2_textview).setBackground(getDrawable(R.drawable.card_background_2));
+                findViewById(R.id.Flashcard_choice_3_textview).setBackground(getDrawable(R.drawable.card_background_2));
+                //if there are no cards return
+                if(allFlashcards.size() == 0) {
+                    Snackbar.make(findViewById(R.id.Flashcard_Question_textview), "No more cards in study set!", Snackbar.LENGTH_SHORT).show();
+                    return;
+                }
+                //advance the pointer index so we can show the next card
+                currentCardDisplayedIndex++;
+                //make sure we don't get IndexOutOfBoundsError if we are viewing the last card in our list
+                if(currentCardDisplayedIndex >= allFlashcards.size()) {
+                    Snackbar.make(findViewById(R.id.Flashcard_Question_textview), "study set complete!", Snackbar.LENGTH_SHORT).show();
+                    currentCardDisplayedIndex = 0;
+                }
+
+                //set the question and answer textviews with data from the database
+                allFlashcards = flashcardDatabase.getAllCards();
+                Flashcard flashcard = allFlashcards.get(currentCardDisplayedIndex);
+                ((TextView) findViewById(R.id.Flashcard_Question_textview)).setText(flashcard.getQuestion());
+                ((TextView) findViewById(R.id.Flashcard_answer_textview)).setText(flashcard.getAnswer());
+                ((TextView) findViewById(R.id.Flashcard_choice_1_textview)).setText(flashcard.getWrongAnswer1());
+                ((TextView) findViewById(R.id.Flashcard_choice_2_textview)).setText(flashcard.getWrongAnswer2());
+                ((TextView) findViewById(R.id.Flashcard_choice_3_textview)).setText(flashcard.getAnswer());
+            }
+        });
+
+
+
+        //onclick listener for trash button
+        findViewById(R.id.trash).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                //delete the current flashcard using the delete method from FlashCardDatabase class
+                flashcardDatabase.deleteCard(((TextView) findViewById(R.id.Flashcard_Question_textview)).getText().toString());
+                //update the list of cards
+                allFlashcards = flashcardDatabase.getAllCards();
+                //check to see if we deleted all the cards
+                if(allFlashcards.size() == 0){
+                    //go to the add card activity and request data back from it
+                    Intent intent = new Intent(MainActivity.this, AddCardActivity.class);
+                    MainActivity.this.startActivityForResult(intent, Add_Card_Request_Code);
+                }else { //otherwise get the next flashcard and display it
+                    currentCardDisplayedIndex++;
+
+                    //make sure we don't get IndexOutOfBoundsError if we are viewing the last card in our list
+                    if(currentCardDisplayedIndex >= allFlashcards.size()) {
+                        Snackbar.make(findViewById(R.id.Flashcard_Question_textview), "study set complete!", Snackbar.LENGTH_SHORT).show();
+                        currentCardDisplayedIndex = 0;
+                    }
+
+                    Flashcard flashcard = allFlashcards.get(currentCardDisplayedIndex);
+                    ((TextView) findViewById(R.id.Flashcard_Question_textview)).setText(flashcard.getQuestion());
+                    ((TextView) findViewById(R.id.Flashcard_answer_textview)).setText(flashcard.getAnswer());
+                    ((TextView) findViewById(R.id.Flashcard_choice_1_textview)).setText(flashcard.getWrongAnswer1());
+                    ((TextView) findViewById(R.id.Flashcard_choice_2_textview)).setText(flashcard.getWrongAnswer2());
+                    ((TextView) findViewById(R.id.Flashcard_choice_3_textview)).setText(flashcard.getAnswer());
+                }
+
             }
         });
     }
 
 
 
-    //not sure why this method give an error
-    //not sure why I can't use setText() method
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == 100) {
+        findViewById(R.id.Flashcard_choice_1_textview).setBackground(getDrawable(R.drawable.card_background_2));
+        findViewById(R.id.Flashcard_choice_2_textview).setBackground(getDrawable(R.drawable.card_background_2));
+        findViewById(R.id.Flashcard_choice_3_textview).setBackground(getDrawable(R.drawable.card_background_2));
+        if (requestCode == Add_Card_Request_Code && resultCode == RESULT_OK) {
             if(data != null) {
                 String question = data.getExtras().getString("question");
                 String answer = data.getExtras().getString("answer");
                 String choice_1 = data.getExtras().getString("choice_1");
                 String choice_2 = data.getExtras().getString("choice_2");
+                //inserting the flashcard into the database
+                flashcardDatabase.insertCard(new Flashcard(question, answer, choice_1, choice_2));
+                allFlashcards = flashcardDatabase.getAllCards();
 
                 ((TextView) findViewById(R.id.Flashcard_Question_textview)).setText(question);
                 ((TextView) findViewById(R.id.Flashcard_answer_textview)).setText(answer);
@@ -177,6 +294,25 @@ public class MainActivity extends AppCompatActivity {
                 ((TextView) findViewById(R.id.Flashcard_choice_3_textview)).setText(answer);
                 Snackbar.make(findViewById(R.id.Flashcard_Question_textview), "card successfully created", Snackbar.LENGTH_SHORT).show();
             }
+        }else if (requestCode == Edit_Card_Request_Code && resultCode == RESULT_OK) {
+            String question = data.getExtras().getString("question");
+            String answer = data.getExtras().getString("answer");
+            String choice_1 = data.getExtras().getString("choice_1");
+            String choice_2 = data.getExtras().getString("choice_2");
+
+            ((TextView) findViewById(R.id.Flashcard_Question_textview)).setText(question);
+            ((TextView) findViewById(R.id.Flashcard_answer_textview)).setText(answer);
+            ((TextView) findViewById(R.id.Flashcard_choice_1_textview)).setText(choice_1);
+            ((TextView) findViewById(R.id.Flashcard_choice_2_textview)).setText(choice_2);
+            ((TextView) findViewById(R.id.Flashcard_choice_3_textview)).setText(answer);
+
+            cardToEdit.setQuestion(question);
+            cardToEdit.setAnswer(answer);
+            cardToEdit.setWrongAnswer1(choice_1);
+            cardToEdit.setWrongAnswer2(choice_2);
+
+            flashcardDatabase.updateCard(cardToEdit);
+            Snackbar.make(findViewById(R.id.Flashcard_Question_textview), "card successfully edited", Snackbar.LENGTH_SHORT).show();
         }
     }
 }
