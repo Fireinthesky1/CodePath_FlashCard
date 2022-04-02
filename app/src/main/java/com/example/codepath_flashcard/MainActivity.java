@@ -3,10 +3,14 @@ package com.example.codepath_flashcard;
 import androidx.annotation.DrawableRes;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.animation.Animator;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.view.View;
+import android.view.ViewAnimationUtils;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -69,9 +73,23 @@ public class MainActivity extends AppCompatActivity {
         Flashcard_Question.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
+                //get the center for the clipping circle
+                int cx = Flashcard_answer.getWidth() / 2;
+                int cy = Flashcard_answer.getHeight() / 2;
+
+                //get the final radius for the clipping circle
+                float finalRadius = (float) Math.hypot(cx, cy);
+
+                //create the animator for this view (the start radius is zero)
+                Animator anim = ViewAnimationUtils.createCircularReveal(Flashcard_answer, cx, cy, 0f, finalRadius);
+
                 //switch the visibility of each text
                 Flashcard_answer.setVisibility(View.VISIBLE);
                 Flashcard_Question.setVisibility(View.INVISIBLE);
+
+                anim.setDuration(3000);
+                anim.start();
             }
         });
 
@@ -165,6 +183,7 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 Intent intent = new Intent(MainActivity.this, AddCardActivity.class);
                 MainActivity.this.startActivityForResult(intent, Add_Card_Request_Code);
+                overridePendingTransition(R.anim.right_in, R.anim.left_out);
             }
         });
 
@@ -206,31 +225,67 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.next).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                //load the animation resource files
+                final Animation LeftOutAnim = AnimationUtils.loadAnimation(view.getContext(), R.anim.left_out);
+                final Animation RightInAnim = AnimationUtils.loadAnimation(view.getContext(), R.anim.right_in);
+
+                LeftOutAnim.setAnimationListener(new Animation.AnimationListener() {
+                    @Override
+                    public void onAnimationStart(Animation animation) {
+                        // this method is called when the animation first starts
+                    }
+
+                    @Override
+                    public void onAnimationEnd(Animation animation) {
+                        // this method is called when the animation is finished playing
+                        //start the right in animation
+                        findViewById(R.id.Flashcard_Question_textview).startAnimation(RightInAnim);
+                        findViewById(R.id.Flashcard_choice_1_textview).startAnimation(RightInAnim);
+                        findViewById(R.id.Flashcard_choice_2_textview).startAnimation(RightInAnim);
+                        findViewById(R.id.Flashcard_choice_3_textview).startAnimation(RightInAnim);
+
+                        //after the right in animation set the question and answer textviews with data from the database
+                        allFlashcards = flashcardDatabase.getAllCards();
+                        Flashcard flashcard = allFlashcards.get(currentCardDisplayedIndex);
+                        ((TextView) findViewById(R.id.Flashcard_Question_textview)).setText(flashcard.getQuestion());
+                        ((TextView) findViewById(R.id.Flashcard_answer_textview)).setText(flashcard.getAnswer());
+                        ((TextView) findViewById(R.id.Flashcard_choice_1_textview)).setText(flashcard.getWrongAnswer1());
+                        ((TextView) findViewById(R.id.Flashcard_choice_2_textview)).setText(flashcard.getWrongAnswer2());
+                        ((TextView) findViewById(R.id.Flashcard_choice_3_textview)).setText(flashcard.getAnswer());
+                    }
+
+                    @Override
+                    public void onAnimationRepeat(Animation animation) {
+                        // we don't need to worry about this method
+                    }
+                });
+
+                //reset the color of the choices
                 findViewById(R.id.Flashcard_choice_1_textview).setBackground(getDrawable(R.drawable.card_background_2));
                 findViewById(R.id.Flashcard_choice_2_textview).setBackground(getDrawable(R.drawable.card_background_2));
                 findViewById(R.id.Flashcard_choice_3_textview).setBackground(getDrawable(R.drawable.card_background_2));
+
                 //if there are no cards return
                 if(allFlashcards.size() == 0) {
                     Snackbar.make(findViewById(R.id.Flashcard_Question_textview), "No more cards in study set!", Snackbar.LENGTH_SHORT).show();
                     return;
                 }
+
                 //advance the pointer index so we can show the next card
                 currentCardDisplayedIndex++;
+
                 //make sure we don't get IndexOutOfBoundsError if we are viewing the last card in our list
                 if(currentCardDisplayedIndex >= allFlashcards.size()) {
                     Snackbar.make(findViewById(R.id.Flashcard_Question_textview), "study set complete!", Snackbar.LENGTH_SHORT).show();
                     currentCardDisplayedIndex = 0;
                 }
 
-                //set the question and answer textviews with data from the database
-                allFlashcards = flashcardDatabase.getAllCards();
-                Flashcard flashcard = allFlashcards.get(currentCardDisplayedIndex);
-                ((TextView) findViewById(R.id.Flashcard_Question_textview)).setText(flashcard.getQuestion());
-                ((TextView) findViewById(R.id.Flashcard_answer_textview)).setText(flashcard.getAnswer());
-                ((TextView) findViewById(R.id.Flashcard_choice_1_textview)).setText(flashcard.getWrongAnswer1());
-                ((TextView) findViewById(R.id.Flashcard_choice_2_textview)).setText(flashcard.getWrongAnswer2());
-                ((TextView) findViewById(R.id.Flashcard_choice_3_textview)).setText(flashcard.getAnswer());
-            }
+                //start the animation
+                findViewById(R.id.Flashcard_Question_textview).startAnimation(LeftOutAnim);
+                findViewById(R.id.Flashcard_choice_1_textview).startAnimation(LeftOutAnim);
+                findViewById(R.id.Flashcard_choice_2_textview).startAnimation(LeftOutAnim);
+                findViewById(R.id.Flashcard_choice_3_textview).startAnimation(LeftOutAnim);
+                }
         });
 
 
@@ -271,6 +326,7 @@ public class MainActivity extends AppCompatActivity {
 
 
 
+    //when we return from an activity
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -286,6 +342,7 @@ public class MainActivity extends AppCompatActivity {
                 //inserting the flashcard into the database
                 flashcardDatabase.insertCard(new Flashcard(question, answer, choice_1, choice_2));
                 allFlashcards = flashcardDatabase.getAllCards();
+                currentCardDisplayedIndex = allFlashcards.size()-1;
 
                 ((TextView) findViewById(R.id.Flashcard_Question_textview)).setText(question);
                 ((TextView) findViewById(R.id.Flashcard_answer_textview)).setText(answer);

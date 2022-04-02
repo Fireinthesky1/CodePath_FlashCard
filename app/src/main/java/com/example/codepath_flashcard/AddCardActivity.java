@@ -71,7 +71,9 @@ public class AddCardActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 finish();
+                overridePendingTransition(R.anim.right_in, R.anim.left_out);
             }
+
         });
     }
 }
